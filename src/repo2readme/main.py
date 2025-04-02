@@ -36,7 +36,8 @@ def get_repo_markdown(repo_path):
 # Read system prompt from file
 def read_system_prompt():
     try:
-        with open("config/system_prompt.txt", 'r', encoding='utf-8') as f:
+        config_path = Path(__file__).parent / "configs" / "system_prompt.txt"
+        with config_path.open("r", encoding="utf-8") as f:
             return f.read().strip()
     except Exception as e:
         print(colored(f"Error reading system prompt: {e}", 'red'))

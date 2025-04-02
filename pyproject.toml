@@ -10,7 +10,7 @@ authors = [
 ]
 description = "A utility for managing and organizing notes"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 dependencies = [
     "tqdm",
     "openai",
@@ -25,10 +25,5 @@ classifiers = [
 [project.scripts]
 repo2readme = "repo2readme.main:main"
 
-# Use src layout which is the recommended approach
-[tool.hatch.build]
-packages = ["src"]
-
-# Specify package locations
 [tool.hatch.build.targets.wheel]
 packages = ["src/repo2readme"]
