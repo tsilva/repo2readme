@@ -27,8 +27,3 @@ repo2readme = "repo2readme.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/repo2readme"]
-
-[tool.hatch.build]
-include = [
-  "src/repo2readme/.env.example",
-]
