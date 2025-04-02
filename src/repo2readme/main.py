@@ -64,7 +64,7 @@ def read_system_prompt() -> str:
 def generate_readme(markdown: str) -> str:
     try:
         client = OpenAI(
-            base_url=os.getenv("OPENROUTER_BASE_URL"),
+            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
             api_key=os.getenv("OPENROUTER_API_KEY")
         )
         response = client.chat.completions.create(
