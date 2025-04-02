@@ -36,9 +36,7 @@ def get_repo_markdown(repo_path):
 # Read system prompt from file
 def read_system_prompt():
     try:
-        script_dir = Path(__file__).parent.parent.parent  # Go up to repo2readme root
-        prompt_path = script_dir / "config" / "system_prompt.txt"        
-        with open(prompt_path, 'r', encoding='utf-8') as f:
+        with open("config/system_prompt.txt", 'r', encoding='utf-8') as f:
             return f.read().strip()
     except Exception as e:
         print(colored(f"Error reading system prompt: {e}", 'red'))
