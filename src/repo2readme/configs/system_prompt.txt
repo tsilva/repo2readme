@@ -25,3 +25,4 @@ You are a documentation assistant. Given a Markdown dump of a GitHub repo, gener
 - Ignore existing README content  
 - Add a newline between headers and content  
 - No logos or images
+- Avoid indentation

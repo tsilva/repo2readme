@@ -25,6 +25,11 @@ def setup_env():
             sys.exit(1)
 
     load_dotenv(dotenv_path=target_env)
+
+    assert os.getenv("MODEL_ID"), "MODEL_ID not set"
+    assert os.getenv("OPENROUTER_BASE_URL"), "OPENROUTER_BASE_URL not set"
+    assert os.getenv("OPENROUTER_API_KEY"), "OPENROUTER_API_KEY not set"
+
 setup_env()
 
 # Console text coloring
@@ -84,8 +89,18 @@ def generate_readme(markdown):
         temperature=0.3,
         max_tokens=4096
     )
+    
+    print(response)
 
-    return response.choices[0].message.content.strip()
+    readme_md = response.choices[0].message.content.strip()
+    
+    # Mitigate behaviour where LLM adds code fences
+    lines = readme_md.split('\n')
+    if lines[0].startswith("```"): lines = lines[1:]
+    if lines[-1].startswith("```"): lines = lines[:-1]
+    readme_md = '\n'.join(lines)
+
+    return readme_md
 
 # Inject logo HTML snippet after the title
 def inject_logo(content, repo_path):
@@ -100,7 +115,6 @@ def inject_logo(content, repo_path):
 
     lines = content.split('\n')
     lines.insert(1, logo_html)
-    lines.insert(1, '\n')
     return '\n'.join(lines)
 
 # Write generated content to README.md
