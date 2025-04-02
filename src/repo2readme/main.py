@@ -10,7 +10,9 @@ def setup_env():
     from pathlib import Path
     import sys
 
-    target_env = Path.home() / ".repo2readme.env"
+    config_dir = Path.home() / "repo2readme"
+    config_dir.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+    target_env = config_dir / ".env"
 
     if not target_env.exists():
         try:
@@ -76,7 +78,7 @@ def generate_readme(markdown):
     system_prompt = read_system_prompt()
     
     client = OpenAI(
-        base_url=os.getenv("OPENROUTER_BASE_URL"),
+        base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
         api_key=os.getenv("OPENROUTER_API_KEY")
     )
 
@@ -93,7 +95,7 @@ def generate_readme(markdown):
     print(response)
 
     readme_md = response.choices[0].message.content.strip()
-    
+
     # Mitigate behaviour where LLM adds code fences
     lines = readme_md.split('\n')
     if lines[0].startswith("```"): lines = lines[1:]
