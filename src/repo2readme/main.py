@@ -25,7 +25,9 @@ def check_env():
 def get_repo_markdown(repo_path):
     try:
         result = subprocess.run(['repo2md', str(repo_path)], capture_output=True, text=True, check=True)
-        return result.stdout
+        repo_md = result.stdout
+        assert repo_md, "repo2md output is empty"
+        return repo_md
     except FileNotFoundError:
         print(colored("Error: `repo2md` not found. Install it and ensure it's in your PATH.", 'red'))
     except subprocess.CalledProcessError as e:
@@ -38,7 +40,9 @@ def read_system_prompt():
     try:
         config_path = Path(__file__).parent / "configs" / "system_prompt.txt"
         with config_path.open("r", encoding="utf-8") as f:
-            return f.read().strip()
+            system_prompt = f.read().strip()
+            assert system_prompt, "System prompt is empty"
+            return system_prompt
     except Exception as e:
         print(colored(f"Error reading system prompt: {e}", 'red'))
         sys.exit(1)
@@ -46,7 +50,7 @@ def read_system_prompt():
 # Generate README from markdown using OpenAI
 def generate_readme(markdown):
     system_prompt = read_system_prompt()
-
+    
     client = OpenAI(
         base_url=os.getenv("OPENROUTER_BASE_URL"),
         api_key=os.getenv("OPENROUTER_API_KEY")
