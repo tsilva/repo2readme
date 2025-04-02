@@ -33,29 +33,20 @@ def get_repo_markdown(repo_path):
         print(e.stderr)
     sys.exit(1)
 
+# Read system prompt from file
+def read_system_prompt():
+    try:
+        script_dir = Path(__file__).parent.parent.parent  # Go up to repo2readme root
+        prompt_path = script_dir / "config" / "system_prompt.txt"        
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    except Exception as e:
+        print(colored(f"Error reading system prompt: {e}", 'red'))
+        sys.exit(1)
+
 # Generate README from markdown using OpenAI
 def generate_readme(markdown):
-    system_prompt = """
-You are a documentation assistant. Given a Markdown dump of a GitHub repo, generate a clean, modern `README.md` that follows open-source best practices.
-
-📘 **README Structure**
-1. **Project Title** — Bold, at the top
-2. 🔹 **One-liner Description** — Clear, concise, and clever; suitable for the GitHub "About" section
-3. 📖 **Overview** — 1–2 short paragraphs explaining what the project does and how it works; professional and succinct
-4. 🚀 **Installation** — Simple setup steps
-5. 🛠️ **Usage** — Practical examples (CLI or code snippets)
-6. 📄 **License** — At the bottom
-
-✅ **Guidelines**
-- Keep it clear and concise
-- Use bullet points where helpful
-- Add emojis for visual structure
-- Avoid redundancy and fluff
-- Don’t describe the README itself
-- Ignore structure of README.md file found in the repo
-- Ensure a newline between headers and content
-- Don't add logo 
-""".strip()
+    system_prompt = read_system_prompt()
 
     client = OpenAI(
         base_url=os.getenv("OPENROUTER_BASE_URL"),
