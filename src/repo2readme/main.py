@@ -6,125 +6,112 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# Console text coloring
-def colored(text: str, color: str) -> str:
-    codes = {'red': '\033[31m', 'green': '\033[32m', 'blue': '\033[34m'}
-    return f"{codes.get(color, '')}{text}\033[0m"
+# ANSI colors
+RED = '\033[31m'
+GREEN = '\033[32m'
+RESET = '\033[0m'
 
-# Setup environment and load .env
+CONFIG_DIR = Path.home() / "repo2readme"
+ENV_PATH = CONFIG_DIR / ".env"
+REQUIRED_VARS = ["MODEL_ID", "OPENROUTER_BASE_URL", "OPENROUTER_API_KEY"]
+
+def print_err(msg): print(f"{RED}{msg}{RESET}")
+def print_ok(msg): print(f"{GREEN}{msg}{RESET}")
+
 def setup_env():
-    config_dir = Path.home() / "repo2readme"
-    config_dir.mkdir(parents=True, exist_ok=True)
-    env_path = config_dir / ".env"
-
-    if not env_path.exists():
-        example_path = Path(__file__).parent / "configs" / ".env.example"
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    if not ENV_PATH.exists():
         try:
-            shutil.copy(example_path, env_path)
-            print(f"✅ Created default env file at {env_path}")
-            print("⚠️  Please edit this file with your actual configuration and run the command again.")
-            print(f"🛠️  Use: nano {env_path}")
+            shutil.copy(Path(__file__).parent / "configs" / ".env.example", ENV_PATH)
+            print_ok(f"✅ Created default env file at {ENV_PATH}")
+            print("⚠️  Please edit this file with your actual configuration and run again.")
+            print(f"🛠️  Use: nano {ENV_PATH}")
         except Exception as e:
-            print(colored(f"❌ Failed to create default .env: {e}", 'red'))
+            print_err(f"❌ Failed to create default .env: {e}")
         sys.exit(1)
-
-    load_dotenv(dotenv_path=env_path)
-    check_env_vars()
-
-def check_env_vars():
-    required_vars = ["MODEL_ID", "OPENROUTER_BASE_URL", "OPENROUTER_API_KEY"]
-    missing = [var for var in required_vars if not os.getenv(var)]
+    load_dotenv(dotenv_path=ENV_PATH)
+    missing = [v for v in REQUIRED_VARS if not os.getenv(v)]
     if missing:
-        print(colored(f"Missing env vars: {', '.join(missing)}", 'red'))
+        print_err(f"Missing env vars: {', '.join(missing)}")
         sys.exit(1)
 
 def get_repo_markdown(repo_path: Path) -> str:
     try:
         result = subprocess.run(['repo2md', str(repo_path)], capture_output=True, text=True, check=True)
-        if not result.stdout.strip():
+        output = result.stdout.strip()
+        if not output:
             raise ValueError("repo2md output is empty")
-        return result.stdout
+        return output
     except FileNotFoundError:
-        print(colored("Error: `repo2md` not found. Install it and ensure it's in your PATH.", 'red'))
+        print_err("Error: `repo2md` not found. Install it and ensure it's in your PATH.")
     except subprocess.CalledProcessError as e:
-        print(colored("Error running `repo2md`:", 'red'))
+        print_err("Error running `repo2md`:")
         print(e.stderr)
     except Exception as e:
-        print(colored(f"Unexpected error: {e}", 'red'))
+        print_err(f"Unexpected error: {e}")
     sys.exit(1)
 
 def read_system_prompt() -> str:
     try:
-        prompt_path = Path(__file__).parent / "configs" / "system_prompt.txt"
-        content = prompt_path.read_text(encoding="utf-8").strip()
+        content = (Path(__file__).parent / "configs" / "system_prompt.txt").read_text(encoding="utf-8").strip()
         if not content:
             raise ValueError("System prompt is empty")
         return content
     except Exception as e:
-        print(colored(f"Error reading system prompt: {e}", 'red'))
+        print_err(f"Error reading system prompt: {e}")
         sys.exit(1)
 
 def generate_readme(markdown: str) -> str:
-    system_prompt = read_system_prompt()
-    client = OpenAI(
-        base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
-        api_key=os.getenv("OPENROUTER_API_KEY")
-    )
-
     try:
+        client = OpenAI(
+            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            api_key=os.getenv("OPENROUTER_API_KEY")
+        )
         response = client.chat.completions.create(
             model=os.getenv("MODEL_ID"),
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": read_system_prompt()},
                 {"role": "user", "content": markdown}
             ],
             temperature=0.3,
             max_tokens=4096
         )
-        readme = response.choices[0].message.content.strip()
-
-        # Remove code fences if present
-        lines = readme.splitlines()
-        if lines[0].startswith("```"): lines = lines[1:]
+        lines = response.choices[0].message.content.strip().splitlines()
+        if lines and lines[0].startswith("```"): lines = lines[1:]
         if lines and lines[-1].startswith("```"): lines = lines[:-1]
         return '\n'.join(lines)
-
     except Exception as e:
-        print(colored(f"❌ Failed to generate README: {e}", 'red'))
+        print_err(f"❌ Failed to generate README: {e}")
         sys.exit(1)
 
 def inject_logo(content: str, repo_path: Path) -> str:
-    logo = repo_path / "logo.jpg"
-    if not logo.exists():
+    if not (repo_path / "logo.jpg").exists():
         return content
-
-    logo_html = """
-<p align="center">
-  <img src="logo.jpg" alt="Logo" width="400"/>
-</p>
-""".strip()
-
+    logo_html = (
+        '<p align="center">\n'
+        '  <img src="logo.jpg" alt="Logo" width="400"/>\n'
+        '</p>\n'
+    )
     lines = content.splitlines()
     lines.insert(1, logo_html)
     return '\n'.join(lines)
 
 def write_readme(repo_path: Path, content: str):
-    readme_path = repo_path / "README.md"
     try:
-        readme_path.write_text(content, encoding='utf-8')
-        print(colored(f"✅ README.md written to {readme_path}", 'green'))
+        (repo_path / "README.md").write_text(content, encoding='utf-8')
+        print_ok(f"✅ README.md written to {repo_path / 'README.md'}")
     except Exception as e:
-        print(colored(f"❌ Failed to write README.md: {e}", 'red'))
+        print_err(f"❌ Failed to write README.md: {e}")
         sys.exit(1)
 
 def main():
     if len(sys.argv) < 2:
-        print(colored("Usage: python main.py /path/to/repo", 'red'))
+        print_err("Usage: python main.py /path/to/repo")
         sys.exit(1)
 
     repo_path = Path(sys.argv[1])
     if not repo_path.is_dir():
-        print(colored(f"Invalid repo path: {repo_path}", 'red'))
+        print_err(f"Invalid repo path: {repo_path}")
         sys.exit(1)
 
     setup_env()
@@ -141,7 +128,7 @@ def main():
     print("💾 Writing to README.md...")
     write_readme(repo_path, readme)
 
-    print(colored("🎉 All done!", 'green'))
+    print_ok("🎉 All done!")
 
 if __name__ == "__main__":
     main()
