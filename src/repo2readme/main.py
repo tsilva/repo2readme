@@ -31,7 +31,7 @@ def setup_env():
         except Exception as e:
             fatal(f"❌ Could not create .env: {e}")
         sys.exit(1)
-    load_dotenv(dotenv_path=ENV_PATH)
+    load_dotenv(dotenv_path=ENV_PATH, override=True)
     missing = [v for v in REQUIRED_VARS if not os.getenv(v)]
     if missing:
         fatal(f"Missing env vars: {', '.join(missing)}")
