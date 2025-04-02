@@ -6,20 +6,20 @@ build-backend = "hatchling.build"
 name = "repo2readme"
 version = "0.1.0"
 authors = [
-  { name = "Tiago Silva" },
+  { name = "Tiago Silva" }
 ]
 description = "A utility for managing and organizing notes"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-    "tqdm",
-    "openai",
-    "python-dotenv"
+  "tqdm",
+  "openai",
+  "python-dotenv"
 ]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
 ]
 
 [project.scripts]
