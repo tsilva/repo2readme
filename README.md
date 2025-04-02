@@ -1,4 +1,5 @@
 # **📦 repo2readme**
+
 <p align="center">
   <img src="logo.jpg" alt="Logo" width="400"/>
 </p>
@@ -6,37 +7,34 @@
 
 🔹 🤖 Generate beautiful READMEs for your repositories with AI
 
-📖 **Overview**
+## 📖 Overview
 
-`repo2readme` is a command-line tool that leverages AI to automatically create clean and modern `README.md` files for your GitHub repositories.
+`repo2readme` is a command-line tool that leverages AI to automatically create clean and modern README files for your GitHub repositories. It analyzes your repository structure using `repo2md`, sends this information to an AI model via OpenRouter, and generates a well-structured README following open-source best practices.
 
-It operates by first generating a Markdown representation of the target repository's structure and content using the external `repo2md` utility. This Markdown dump, along with a predefined system prompt outlining best practices, is then processed by an AI model via OpenRouter to produce a well-structured README. The final `README.md` is saved in the root directory of the target repository.
+The tool handles everything from repository analysis to README generation in one simple command, making documentation easier and more consistent across your projects.
 
-🚀 **Installation**
+## 🚀 Installation
 
-1.  Install the tool using pipx:
-    ```bash
-    pipx install . --force
-    ```
-2.  Configure your environment:
-    *   The tool automatically creates a default configuration file at `~/.repo2readme/.env` on the first run if it doesn't exist.
-    *   Edit this file to add your OpenRouter API key and other necessary configurations (like `MODEL_ID`). An example structure can be found in the source code at `src/repo2readme/configs/.env.example`.
-    *   Ensure the `OPENROUTER_API_KEY` variable is set.
+```bash
+pipx install . --force
+```
 
-🛠️ **Usage**
+The tool will create a default configuration file at `~/.repo2readme/.env` on first run. Edit this file to add your OpenRouter API key and configure the AI model you want to use.
 
-Execute the tool from your terminal, providing the path to the local repository you wish to document:
+## 🛠️ Usage
+
+Simply run the command with the path to your repository:
 
 ```bash
 repo2readme /path/to/your/repository
 ```
 
-This command will:
-*   Analyze the repository using `repo2md`.
-*   Send the repository information to the configured AI model via OpenRouter.
-*   Generate a new `README.md` file.
-*   Save the generated `README.md` to the root of the target repository, overwriting any existing README file.
+This will:
+- Analyze your repository structure
+- Generate a README using AI
+- Save the new README.md to your repository root
+- Automatically include your logo.jpg if present
 
-📄 **License**
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
