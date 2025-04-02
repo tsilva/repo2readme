@@ -1,12 +1,31 @@
-from dotenv import load_dotenv
 import os
 import sys
 import subprocess
 from pathlib import Path
 from openai import OpenAI
 
-# Load environment variables
-load_dotenv(override=True)
+def setup_env():
+    import shutil
+    from dotenv import load_dotenv
+    from pathlib import Path
+    import sys
+
+    target_env = Path.home() / ".repo2readme.env"
+
+    if not target_env.exists():
+        try:
+            example_path = Path(__file__).parent / "configs" / ".env.example"
+            shutil.copy(example_path, target_env)
+            print(f"✅ Created default env file at {target_env}")
+            print("⚠️  Please edit this file with your actual configuration and run the command again.")
+            print(f"🛠️  You can use this command to edit it:\n     nano {target_env}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"❌ Failed to create default .env: {e}")
+            sys.exit(1)
+
+    load_dotenv(dotenv_path=target_env)
+setup_env()
 
 # Console text coloring
 def colored(text, color):
